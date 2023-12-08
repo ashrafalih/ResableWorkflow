@@ -19,8 +19,8 @@ jobs:
 
       - name: Show image_name and image_tag
         run: |
-          echo "Image Name: ${{ env.image_name }}"
-          echo "Image Tag: ${{ env.image_tag }}"
+          echo "Image Name: ${{ inputs.image_name }}"
+          echo "Image Tag: ${{ inputs.image_tag }}"
           
 #################################
 # name: Create and publish Docker image
