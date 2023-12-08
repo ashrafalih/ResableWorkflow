@@ -1,0 +1,103 @@
+name: Create and publish Docker image
+
+on:
+  workflow_call:
+    inputs:
+      image_name:
+        required: true
+        type: string
+      tag:
+        type: string
+    # secrets:
+    #   registry_username:
+    #     required: true
+    #   registry_password:
+    #     required: true
+    #   aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #   aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #   aws_region: <my_aws_region>
+    #   aws_registry_url: ${{ secrets.AWS_REGISTRY_URL }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v2
+      #   with:
+      #     aws-access-key-id: ${{ secrets.aws_access_key_id }}
+      #     aws-secret-access-key: ${{ secrets.aws_secret_access_key }}
+      #     aws-region: ${{ secrets.aws_region }}
+
+      # - name: Login to AWS ECR
+      #   uses: docker/login-action@v1
+      #   with:
+      #     username: ${{ secrets.registry_username }}
+      #     password: ${{ secrets.registry_password }}
+      #     registry: ${{ secrets.aws_registry_url }}
+
+      - name: Set the tag
+        run: |
+          if [ -z "${{ inputs.tag }}" ]; then 
+            echo "final_tag=latest" >> $GITHUB_ENV
+          else
+            echo "final_tag=${{ inputs.tag }}" >> $GITHUB_ENV
+          fi
+
+      - name: Build and push Docker image to ECR
+        run: |
+          docker build . --file Dockerfile --tag ${{ env.final_tag }}
+          docker images
+          # docker build . -t ${{ secrets.aws_registry_url }}/${{ inputs.image_name }}:${{ env.final_tag }}
+          # docker push ${{ secrets.aws_registry_url }}/${{ inputs.image_name }}:${{ env.final_tag }}
+
+#################################################
+# name: Create and publish docker image # Name of the workflow
+
+# on:
+#   workflow_call:
+#     inputs:
+#       image_name:
+#         required: true
+#         type: string
+#       tag:
+#         type: string
+#     secrets:
+#       registry_username:
+#         required: true
+#       registry_password:
+#         required: true
+
+# jobs:
+#   build-and-push:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
+
+#       - name: Configure AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v2
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: <your-aws-region>
+
+#       - name: Set the tag
+#         run: |
+#           if [ -z "${{ inputs.tag }}" ]; then 
+#             echo "final_tag=latest" >> $GITHUB_ENV
+#           else
+#             echo "final_tag=${{ inputs.tag }}" >> $GITHUB_ENV
+#           fi
+
+#       - name: Build and push Docker image to ECR
+#         uses: docker/build-push-action@v2
+#         with:
+#           context: .
+#           push: true
+#           tags: ${{ secrets.AWS_REGISTRY_URL }}/${{ inputs.image_name }}:${{ env.final_tag }}
